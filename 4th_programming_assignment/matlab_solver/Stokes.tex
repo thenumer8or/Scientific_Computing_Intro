@@ -1,0 +1,52 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.0in]{geometry}
+\newcommand{\bs}{\begin{eqnarray*}}
+\newcommand{\es}{\end{eqnarray*}}
+\begin{document}
+\title{Third programming Assignment}
+\author{Peter Monk}
+\date{\today}
+\maketitle
+
+You may work in pairs on this assignment (or alone if you prefer).  
+
+\begin{enumerate}
+\item Please download the Navier-Stokes notes from Sakai if you have not already done so.  Your job is to modify your code from the
+last assignment to implement the full Navier-Stokes algorithm (i.e. not neglecting convection terms).  So if $\vec{u}=(u,v)^T$ we will be solving the  system 
+\begin{eqnarray*}
+\frac{\partial \vec{u}}{\partial t}+(\vec{u}\cdot\nabla)\vec{u}\nabla p&=&\frac{1}{Re}\Delta\vec{u}\\
+\nabla\cdot\vec{u}&=&0
+\end{eqnarray*}
+on a simple unit square so $\Omega=[0,1]\times [0,1]$.  In addition we will impose the following, somewhat artificial, ``driven cavity'' boundary conditions
+\begin{eqnarray*}
+u=v=0\mbox{ when }x=0\\
+u=v=0\mbox{ when }x=1\\
+u=v=0\mbox{ when }y=0\\
+u=\bar{u},\;v=0\mbox{ when } y=1
+\end{eqnarray*}
+where $\bar{u}$ is a given constant and is specified as \verb+ubar+ in my code.
+
+You have to make two changes to your algorithm from the second programming project:
+\begin{enumerate}
+\item You need to modify the computation of $F$ and $G$ by including the convection terms in  (3.36) and (3.37) by using the upwinded fluxes from (3.19a) and (3.19b) in
+\begin{verbatim}
+ function   [f,g]=comp_fg ( u, v, imax, jmax, delt, delx, dely, re, gamma )
+    \end{verbatim}
+ As before, at the external boundary set $F=u$ (on the right and left boundary) and $G=v$ on the upper and lower boundary.  Note that the upwinded fluxes here choose the direction of upwinding based on the flow field and include a weighting parameter $\gamma$ that now needs to be read in and passed to the function.
+\item
+You will also need to implement a new function that figures out the stable time-step at each step. Use the first line
+\begin{verbatim}
+function    delt= comp_delt (t, delx, dely, u, v, re, tau) 
+\end{verbatim}
+Where \verb+tau+ is a new ``safety factor''.  Use (3.50).  This function needs to be used at every time-step at the start of the loop (just under \verb+while t <....+)  so that the time step will change from step to step and you may not reach the final time precisely (replace \verb+t_end-delt+ by \verb+t_end+ in the while statement).
+
+\item Choose $\tau=0.5$ and $\gamma=0.9$ and run you code for the same example that we used for the Stokes Problem.  Since the Reynolds number is rather small, there should not be much difference in the computed velocity and pressure field at $t=5$ (don't try to quantify this  - the pictures
+should look similar!).  Plot the pressure/velocity field and hand it in.
+
+\item Now modify the code to set \verb+Imax=Jmax=128+ and run the code with \verb+re=1000+ to a final time of \verb+t_end=15+ (you may wish to remove the step by step output).  Plot the solution at timed close to $t=2,4,6,8,10,12,15$ and watch the large single primary eddy grow to roughly steady state.
+You may also be able to see secondary eddys in the bottom left and right corner. Hand in the pictures. Repeat for \verb+re=5000+ (hand in only the result at the final time).
+\end{enumerate}
+
+\input 722Problem.tex
+\end{enumerate}
+\end{document}

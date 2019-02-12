@@ -1,0 +1,37 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.0in]{geometry}
+\begin{document}
+\title{Third programming Assignment}
+\author{Peter Monk}
+\date{\today}
+\maketitle
+
+You may work in pairs on this assignment (or alone if you prefer).  Please continue to refer to the Navier-Stokes notes from Sakai.  Your job is to implement the non-linear convective term to convert your Stokes code to a Navier-Stokes code.   So if $\vec{u}=(u,v)^T$ we will now be be solving the Stokes system 
+\begin{eqnarray*}
+\frac{\partial \vec{u}}{\partial t}+(\vec{u}\cdot\nabla)\vec{u}+\nabla p&=&\frac{1}{Re}\Delta\vec{u}\\
+\nabla\cdot\vec{u}&=&0
+\end{eqnarray*}
+on a simple unit square so $\Omega=[0,1]\times [0,1]$.  In addition we will impose the following, somewhat artificial, ``driven cavity'' boundary conditions
+\begin{eqnarray*}
+u=v=0\mbox{ when }x=0\\
+u=v=0\mbox{ when }x=1\\
+u=v=0\mbox{ when }y=0\\
+u=\bar{u},\;v=0\mbox{ when } y=1
+\end{eqnarray*}
+where $\bar{u}$ is a given constant and is specified as \verb+ubar+ in my code.
+
+Modify your function
+\begin{verbatim}
+ function   [f,g]=comp_fg ( u, v, imax, jmax, delt, delx, dely, re )
+    \end{verbatim}
+    to include the convective term using equations () and () from the notes (implementing upwind differencing for stablity).
+
+Implement a new function that computes the maximum stable time step using equations ().  Make the first line of this function
+\begin{verbatim}
+
+\end{verbatim}
+This will need to be used at the start of every time step (i.e. you can no-longer use a fixed time step) so you will need to slightly change the time step stopping criterion.  You can no longer expect to hit $t=5$ exactly, but run until you have just passed that time.
+
+
+
+\end{document}

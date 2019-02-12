@@ -1,0 +1,97 @@
+\item{} (From Numerical Computing with MATLAB by C. Moler) This problem makes use of quadrature, ordinary differential equations, and zero finding to study a nonlinear boundary value problem.  The function $y(x)$ is defined on the interval $0 \le x \le 1$ by
+\bs
+y^{\prime \prime} = y^2 &-& 1,\\
+y(0) &=& 0,\\
+y(1) &=& 1.
+\es
+This problem can be solved four different ways.  Plot the four solutions obtained on a single figure, using \texttt{subplot (2, 2, 1)}, $\ldots$, \texttt{subplot (2, 2, 4)}. 
+\begin{description}
+\item{(a)}  Shooting method.  Suppose we know the value of $\eta = y^\prime (0)$.  Then we could use an ordinary differential equation solver like  {\texttt ode45} to solve the initial value problem
+\bs
+y^{\prime \prime} = y^2 &-& 1,\\
+y(0) &=& 0,\\
+y^\prime (0) &=& \eta.
+\es
+on the interval $0 \le x \le 1$.  Each value of $\eta$ determines a different solution $y (x; \eta)$ and corresponding value for $y (1: \eta)$.  The desired boundary condition $y(1) = 1$ leads to the definition of a function of $\eta$:
+\[
+f(\eta) = y(1; \eta) - 1.
+\]
+Write a MATLAB function whose argument is $\eta$.  This function should solve the ordinary differential equation initial problem using your choice
+of MATLAB ode solvers and return $f(\eta)$.  Then use {\texttt fzero} to find a value $\eta$, so that $f(\eta_\ast) = 0$.  Finally, use this $\eta_\ast$ in the initial value problem to get the desired $y(x)$.  Report the value of $\eta_\ast$ you obtain.
+\item{(b)}  Quadrature.  Observe that $y^\prime = y^2 - 1$ can be written
+\[
+\frac{d}{dx} \left( \frac{(y^\prime)^2}{2} - \frac{y^3}{3} + y \right) = 0.
+\]
+This means the expression
+\[
+\kappa = \frac{(y^\prime)^2}{2} - \frac{y^3}{3} + y
+\]
+is actually constant.  Because $y(0) = 0$, we have $y^\prime (0) = \sqrt{2 \kappa}$.  So, if we could find the constant $\kappa$, the boundary value problem would be converted into an initial value problem.  Integrating the equation
+\[
+\frac{dx}{dy} = \frac{1}{\sqrt{2 (\kappa + y^3 / 3 - y)}}
+\]
+gives
+\[
+x = \int\limits^y_0 h(y, \kappa) dy,
+\]
+where
+\[
+h(y, \kappa) = \frac{1}{\sqrt{2 (\kappa + y^3 / 3 - y)}}.
+\]
+This, together with the boundary condition $y(1) = 1$, leads to the definition of a function $g(\kappa):$
+\[
+g(\kappa) = \int\limits^1_0 h(y, \kappa) dy - 1.
+\]
+You need two MATLAB functions, one that computes $h(y, \kappa)$ and one that computes $g(\kappa)$.  They can be two separate M-files, but a better idea is to make $h(y, \kappa)$ an inline function within $g(\kappa)$.  The function $g(\kappa)$ should use MATLAB {\texttt quad} to evaluate the integral of $h(y, \kappa)$.  The parameter $\kappa$ is passed as an extra argument from $g$, through {\texttt quad}, to $h$.  Then {\texttt fzero} can be used to find a value $\kappa$, so that $g(\kappa_\ast) = 0$.  Finaly, this $\kappa_\ast$ provides the second initial value necessary for an ordinary differential equation solver to compute $y(x)$.  Report the value of $\kappa_\ast$ you obtain.
+\item{(c and d)}  Nonlinear finite differences.  Partition the interval into $n + 1$ equal subintervals with spacing $h = 1 / (n + 1)$:
+\[
+x_i = ih, \; i = 0, \ldots, n + 1.
+\]
+Replace the differential equation with a nonlinear system of difference equations involving $n$ unknowns, $y_1, y_2, \ldots, y_n$:
+\[
+y_{i + 1} - 2y_i + y_{i - 1} = h^2 (y^2_i - 1), \; i = 1, \ldots, n.
+\]
+The boundary conditions are $y_0 = 0$ and $y_{n + 1} = 1$.\\
+
+A convenient way to compute the vector of second differences involves the $n$-by-$n$ tridiagonal matrix $A$ with -2's on the diagonal, 1's on the super- and subdiagonals, and 0's elsewhere.  %You can generate a sparse form of this matrix with
+%\moveright 0.9in \vbox{
+%\begin{verbatim}
+%e = ones(n,1);
+%A = spdiags([e -2*e e], [-1 0 1],n,n);
+%\end{verbatim}}
+The boundary conditions $y_0 = 0$ and $y_{n + 1} = 1$ can be represented by the $n$-vector $b$, with $b_i = 0, i = 1, \ldots, n - 1$, and $b_n = 1$.  The vector formulation of the nonlinear difference equation is
+\[
+Ay + b = h^2 (y^2 - 1),
+\]
+where $y^2$ is the vector containing the squares of the elements of $y$, that is, the MATLAB element-by-element power \verb+y.^2.+  There are at least two ways to solve this system.  
+\item{(c)}  Linear iteration.  This is based on writing the difference equation in the form
+\[
+Ay = h^2 (y^2 - 1) - b.
+\]
+Start with an initial guess for the solution vector $y$.  The iteration consists of plugging the current $y$ into the right-hand side of this equation and then solving the resulting linear system for a new $y$. % This makes repeated use of the sparse backslash operator with the iterated assignment statement
+%
+%\moveright 0.9in \vbox{
+%\begin{verbatim}
+%y = A\(h^2*(y.^2 - 1) - b)
+%\end{verbatim}}
+It turns out that this iteration converges linearly and provides a robust method for solving the nonlinear difference equations.  Report the value of $n$ you use and the number of iterations required.
+\item{(d)}  Newton's method.  This is based on writing the difference equation in the form 
+\[
+F(y) = Ay + b - h^2 (y^2 - 1) = 0.
+\]
+Newton's method for solving $F(y) = 0$ requires a many-variable analogue of the derivative $F^\prime (y)$.  The analogue is the Jacobian, the matrix of partial derivatives
+\[
+J = \frac{\partial F_i}{\partial y_j} = A - h^2 \; \mbox{diag} (2y).
+\]
+%In MATLAB, one step of Newton's method would be
+% 
+%\moveright 0.9in \vbox{
+%\begin{verbatim}
+%F = A*y + b - h^2*(y.^2 - 1);
+%J = A - h^2*spdiags(2*y,0,n,n);
+%y = y - J\F;
+%\end{verbatim}}
+With a good starting guess, Newton's method converges in a handful of iterations.  Report the value of $n$ you use and the number of iterations required.
+
+
+\end{description}
